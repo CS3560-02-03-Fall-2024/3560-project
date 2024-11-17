@@ -90,8 +90,8 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
   //discord --> how to rebase 
 
 
-  //current implementation
-
+ /*
+second implementation
   // /api/report/route.ts
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
@@ -218,4 +218,217 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+*/
+
+//current implementation 
+
+
+// /route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { createEntity, getEntities, updateEntity } from './db';
+import { EntityName, EntityTypes } from './index';
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { entity: EntityName } }
+) {
+  try {
+    const entityName = params.entity;
+    const body = await request.json();
+
+    // Validate entity name
+    if (!['report', 'civilianInfo'].includes(entityName)) {
+      return NextResponse.json(
+        { error: 'Invalid entity type' },
+        { status: 400 }
+      );
+    }
+
+    // Validate required fields based on entity type
+    if (!validateEntity(entityName, body)) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    const result = await createEntity(entityName, body);
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    console.error('Error creating entity:', error);
+    return NextResponse.json(
+      { error: 'Failed to create entity' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { entity: EntityName } }
+) {
+  try {
+    const entityName = params.entity;
+    const { searchParams } = new URL(request.url);
+    
+    // Validate entity name
+    if (!['report', 'civilianInfo'].includes(entityName)) {
+      return NextResponse.json(
+        { error: 'Invalid entity type' },
+        { status: 400 }
+      );
+    }
+
+    const options = {
+      limit: parseInt(searchParams.get('limit') || '10'),
+      page: parseInt(searchParams.get('page') || '1'),
+      isActive: searchParams.get('isActive') 
+        ? searchParams.get('isActive') === 'true'
+        : undefined,
+      search: searchParams.get('search') || undefined,
+      filters: getEntitySpecificFilters(entityName, searchParams)
+    };
+
+    const result = await getEntities(entityName, options);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('Error fetching entities:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch entities' },
+      { status: 500 }
+    );
+  }
+}
+
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { entity: EntityName } }
+) {
+  try {
+    const entityName = params.entity;
+    const body = await request.json();
+    const { id, ...data } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Missing ID for update' },
+        { status: 400 }
+      );
+    }
+
+    // Validate entity name
+    if (!['report', 'civilianInfo'].includes(entityName)) {
+      return NextResponse.json(
+        { error: 'Invalid entity type' },
+        { status: 400 }
+      );
+    }
+
+    // Validate required fields based on entity type
+    if (!validateEntity(entityName, data)) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    const result = await updateEntity(entityName, id, data);
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
+    console.error('Error updating entity:', error);
+    return NextResponse.json(
+      { error: 'Failed to update entity' },
+      { status: 500 }
+    );
+  }
+}
+
+
+// Helper functions
+function validateEntity(
+  entityName: EntityName,
+  data: any
+): data is EntityTypes[typeof entityName] {
+  switch (entityName) {
+    case 'report':
+      return Boolean(
+        data.title &&
+        data.description &&
+        data.severity &&
+        ['low', 'medium', 'high'].includes(data.severity)
+      );
+    case 'caller':
+      return Boolean(
+        data.name &&
+        data.dateOfBirth &&
+        data.address &&
+        data.contactNumber &&
+        ['active', 'inactive', 'pending'].includes(data.status)
+      );
+    default:
+      return false;
+  }
+}
+
+function getEntitySpecificFilters(entityName: EntityName, searchParams: URLSearchParams) {
+  const filters: Record<string, any> = {};
+
+  switch (entityName) {
+    case 'report':
+      if (searchParams.has('severity')) {
+        filters.severity = searchParams.get('severity');
+      }
+      break;
+    case 'caller':
+      if (searchParams.has('status')) {
+        filters.status = searchParams.get('status');
+      }
+      break;
+  }
+
+  return filters;
+}
+
+// hooks/useEntity.ts
+import { useQuery } from '@tanstack/react-query';
+//import { EntityName, EntityTypes } from '@/types';
+
+interface UseEntityParams {
+  limit?: number;
+  page?: number;
+  isActive?: boolean;
+  search?: string;
+  filters?: Record<string, any>;
+}
+
+export function useEntity<T extends EntityName>(
+  entityName: T,
+  params: UseEntityParams = {}
+) {
+  return useQuery<{ data: EntityTypes[T][] } & { pagination: any }>({
+    queryKey: [entityName, params],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams();
+      if (params.limit) searchParams.set('limit', params.limit.toString());
+      if (params.page) searchParams.set('page', params.page.toString());
+      if (params.isActive !== undefined) searchParams.set('isActive', params.isActive.toString());
+      if (params.search) searchParams.set('search', params.search);
+      
+      // Add entity-specific filters
+      Object.entries(params.filters || {}).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.set(key, value.toString());
+        }
+      });
+
+      const response = await fetch(`/api/${entityName}?${searchParams.toString()}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${entityName}`);
+      }
+      return response.json();
+    }
+  });
 }
