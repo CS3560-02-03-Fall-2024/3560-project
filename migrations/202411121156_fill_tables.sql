@@ -15,3 +15,6 @@ VALUES (1, 1, 1, '123 Oak Blvd, Irvine', 'Medium', 'In Progress', 'Large fire...
 -- Inserting mock data into Assignment table
 INSERT INTO Assignment (assignment_ID, incident_ID, unit_number, unit_type, backup_needed, status) 
 VALUES (1, 1, 101, 'Police', FALSE, 'Completed');
+
+--switch back for migrations handler
+use mysql;
