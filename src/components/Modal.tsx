@@ -26,6 +26,41 @@ export default function Modal({ isOpen, setIsOpen }: ModalProps) {
     }
   };
 
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch("/api/incidents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          latitude: lat,
+          longitude: long,
+          phone,
+          description,
+          eventType: type,
+        }),
+      });
+
+      if (response.ok) {
+        alert("Report submitted successfully!");
+        setIsOpen(false);
+        // Optionally reset the form fields
+        setLat("");
+        setLong("");
+        setPhone("");
+        setDescription("");
+        setType("");
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error || "Failed to submit the report."}`);
+      }
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      alert("An unexpected error occurred. Please try again.");
+    }
+  };
+
   return (
     isOpen && (
       <>
