@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "../components/Navbar";
 import { Inter } from "next/font/google";
+import Providers from "./api/providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -20,7 +21,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="flex flex-col px-[100px] pt-20 pb-[10px] bg-white">
           <Navbar />
-          {children}
+          <Providers>{children}</Providers>
         </div>
       </body>
     </html>
