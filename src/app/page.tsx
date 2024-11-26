@@ -31,7 +31,7 @@ export default function Home() {
           <div className="flex flex-row justify-between">
             <StatCard title="Active Incidents" data={data.length} />
             <StatCard title="Available Units" data={100 - data.length} />
-            <StatCard title="Reports Submitted" data={30} />
+            <StatCard title="Reports Submitted" data={data.filter((report) => report.status === "Completed").length} />
           </div>
           <Card>
             <div className="flex flex-row w-full justify-between">

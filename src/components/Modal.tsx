@@ -15,10 +15,12 @@ interface ModalProps {
 
 export default function Modal({ isOpen, setIsOpen }: ModalProps) {
   const [address, setAddress] = useState("");
-  const [callerId, setCallerId] = useState("");
   const [personnelId, setPersonnelId] = useState("");
   const [priority, setPriority] = useState("");
   const [description, setDescription] = useState("");
+  const [phone, setPhone] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -37,11 +39,13 @@ export default function Modal({ isOpen, setIsOpen }: ModalProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          caller_ID: callerId,
           personnel_ID: personnelId,
           address,
           priority,
           description,
+          phone,
+          firstName,
+          lastName,
         }),
       });
 
@@ -77,9 +81,19 @@ export default function Modal({ isOpen, setIsOpen }: ModalProps) {
                   label="Address"
                 />
                 <Input
-                  onChange={(e) => setCallerId(e.target.value)}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  label="First Name"
+                />
+
+                <Input
+                  onChange={(e) => setLastName(e.target.value)}
+                  label="Last Name"
+                />
+
+                <Input
+                  onChange={(e) => setPhone(e.target.value)}
+                  label="Phone Number"
                   type="phone"
-                  label="CallerId"
                 />
                 <Textarea
                   onChange={(e) => setDescription(e.target.value)}
