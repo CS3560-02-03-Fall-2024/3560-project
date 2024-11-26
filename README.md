@@ -21,20 +21,27 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## DB
-To start the database container, run the following command:
+
+To start the database container, run the following command to start the MySQL server:
 
 ```bash
 npm run db:start
 ```
 
-Then visit [localhost](http://localhost:8080) to view the db.
+Then, in a new terminal, run this command to create the tables and populate them with dummy data (only needs to be run once):
+
+```bash
+npm run db:migrate
+```
+
+Finally, visit [localhost:8080](http://localhost:8080) to view the db.
 
 To log in, set the following fields and press "Login":
 - System: `MySQL`
 - Server: `db`
 - Username: `root`
 - Password: `mysql`
-- Database: `mysql`
+- Database: `dispatch_system`
 
 ## Learn More
 
