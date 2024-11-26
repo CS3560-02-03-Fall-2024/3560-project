@@ -1,12 +1,13 @@
 "use client";
 
+import { TableProps } from "@/components/Table";
 import { Report } from "../components/report";
 
 interface ReportsTableProps {
-  reports: Report[];
-  onReportClick: (report: Report) => void;
-  handleSort: (field: keyof Report) => void;
-  sortBy: keyof Report | null;
+  reports: TableProps["data"];
+  onReportClick: (report: TableProps["data"][0]) => void;
+  handleSort: (field: keyof TableProps["data"][0]) => void;
+  sortBy: keyof TableProps["data"][0] | null;
   sortOrder: "asc" | "desc";
 }
 
@@ -24,40 +25,37 @@ export default function ReportsTable({
           <tr className="bg-gray-100 text-gray-700">
             <th
               className="px-4 py-2 border-b cursor-pointer"
-              onClick={() => handleSort("id")}
+              onClick={() => handleSort("incident_ID")}
             >
-              ID {sortBy === "id" && (sortOrder === "asc" ? "▲" : "▼")}
+              ID {sortBy === "incident_ID" && (sortOrder === "asc" ? "▲" : "▼")}
             </th>
             <th
               className="px-4 py-2 border-b cursor-pointer"
-              onClick={() => handleSort("type")}
+              onClick={() => handleSort("status")}
             >
-              Type {sortBy === "type" && (sortOrder === "asc" ? "▲" : "▼")}
+              Type {sortBy === "status" && (sortOrder === "asc" ? "▲" : "▼")}
             </th>
             <th
               className="px-4 py-2 border-b cursor-pointer"
               onClick={() => handleSort("priority")}
             >
-              Priority {sortBy === "priority" && (sortOrder === "asc" ? "▲" : "▼")}
+              Priority{" "}
+              {sortBy === "priority" && (sortOrder === "asc" ? "▲" : "▼")}
             </th>
-            <th className="px-4 py-2 border-b">Summary</th>
+            <th className="px-4 py-2 border-b">Description</th>
             <th
               className="px-4 py-2 border-b cursor-pointer"
-              onClick={() => handleSort("units")}
+              onClick={() => handleSort("personnel_ID")}
             >
-              Units {sortBy === "units" && (sortOrder === "asc" ? "▲" : "▼")}
-            </th>
-            <th
-              className="px-4 py-2 border-b cursor-pointer"
-              onClick={() => handleSort("dateResolved")}
-            >
-              Date Resolved {sortBy === "dateResolved" && (sortOrder === "asc" ? "▲" : "▼")}
+              Units{" "}
+              {sortBy === "personnel_ID" && (sortOrder === "asc" ? "▲" : "▼")}
             </th>
             <th
               className="px-4 py-2 border-b cursor-pointer"
-              onClick={() => handleSort("dateReported")}
+              onClick={() => handleSort("created_at")}
             >
-              Date Reported {sortBy === "dateReported" && (sortOrder === "asc" ? "▲" : "▼")}
+              Date Reported{" "}
+              {sortBy === "created_at" && (sortOrder === "asc" ? "▲" : "▼")}
             </th>
             <th
               className="px-4 py-2 border-b cursor-pointer"
@@ -68,34 +66,35 @@ export default function ReportsTable({
           </tr>
         </thead>
         <tbody>
-          {reports.map((report) => (
-            <tr key={report.id}>
+          {reports.map((report, idx) => (
+            <tr key={idx}>
               <td className="px-4 py-2 border-b">
                 <button
                   className="text-blue-600 hover:underline"
                   onClick={() => onReportClick(report)}
                 >
-                  {report.id}
+                  {report.incident_ID}
                 </button>
               </td>
-              <td className="px-4 py-2 border-b">{report.type}</td>
+              <td className="px-4 py-2 border-b">{report.status}</td>
               <td className="px-4 py-2 border-b">
                 <span
                   className={`px-3 py-1 rounded-full text-white ${
-                    report.priority >= 4
+                    report.priority === "High"
                       ? "bg-red-500"
-                      : report.priority === 3
-                      ? "bg-yellow-500"
-                      : "bg-green-500"
+                      : report.priority === "Medium"
+                        ? "bg-yellow-500"
+                        : "bg-green-500"
                   }`}
                 >
                   {report.priority}
                 </span>
               </td>
-              <td className="px-4 py-2 border-b">{report.summary.slice(0, 30)}...</td>
-              <td className="px-4 py-2 border-b">{report.units}</td>
-              <td className="px-4 py-2 border-b">{report.dateResolved}</td>
-              <td className="px-4 py-2 border-b">{report.dateReported}</td>
+              <td className="px-4 py-2 border-b">
+                {report.description.slice(0, 30)}...
+              </td>
+              <td className="px-4 py-2 border-b">{report.personnel_ID}</td>
+              <td className="px-4 py-2 border-b">{report.created_at}</td>
               <td className="px-4 py-2 border-b">{report.status}</td>
             </tr>
           ))}
